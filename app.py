@@ -1,8 +1,10 @@
+import os
 import streamlit as st
 import openai
 from PyPDF2 import PdfReader
 
-openai.api_key = st.secrets["openai_api_key"]
+# Fetch the OpenAI API key from environment variable
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
 def extract_text_from_pdf(file):
     reader = PdfReader(file)
@@ -12,12 +14,15 @@ def extract_text_from_pdf(file):
     return text
 
 def query_gpt4(prompt):
-    response = openai.Completion.create(
+    response = openai.ChatCompletion.create(
         model="gpt-4",
-        prompt=prompt,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=300
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message['content'].strip()
 
 def main():
     st.title("PDF Document Analyzer")
